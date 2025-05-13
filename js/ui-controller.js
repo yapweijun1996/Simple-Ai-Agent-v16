@@ -584,6 +584,16 @@ const UIController = (function() {
         clearStatusBar(document.getElementById('status-bar'));
     }
 
+    /**
+     * Enables the message input and send button
+     */
+    function enableMessageInput() {
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
+        if (messageInput) messageInput.disabled = false;
+        if (sendButton) sendButton.disabled = messageInput.value.trim().length === 0;
+    }
+
     // Public API
     return {
         init,
@@ -623,5 +633,6 @@ const UIController = (function() {
         showError,
         showEmptyState,
         hideEmptyState,
+        enableMessageInput,
     };
 })(); 

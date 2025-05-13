@@ -34,16 +34,23 @@ const ChatController = (function() {
         }
     }
 
-    // Add helper to robustly extract JSON tool calls (handles markdown fences)
+    // Add helper to robustly extract JSON tool calls using delimiters and schema validation
     function extractToolCall(text) {
-        const jsonMatch = text.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) return null;
+        // Look for tool call wrapped in unique delimiters
+        const match = text.match(/\[\[TOOLCALL\]\]([\s\S]*?)\[\[\/TOOLCALL\]\]/);
+        if (!match) return null;
+        let obj;
         try {
-            return JSON.parse(jsonMatch[0]);
+            obj = JSON.parse(match[1]);
         } catch (err) {
-            console.warn('Tool JSON parse error:', err, 'from', jsonMatch[0]);
+            console.warn('Tool JSON parse error:', err, 'from', match[1]);
             return null;
         }
+        // Simple schema validation: must have 'tool' (string) and 'arguments' (object)
+        if (typeof obj === 'object' && typeof obj.tool === 'string' && typeof obj.arguments === 'object') {
+            return obj;
+        }
+        return null;
     }
 
     const cotPreamble = `**Chain of Thought Instructions:**
@@ -472,6 +479,10 @@ Answer: [your final, concise answer based on the reasoning above]`;
             throw err;
         } finally {
             state.isThinking = false;
+            // Always re-enable message input
+            UIController.clearSpinner();
+            UIController.clearStatus();
+            UIController.enableMessageInput && UIController.enableMessageInput();
         }
     }
 
@@ -509,6 +520,11 @@ Answer: [your final, concise answer based on the reasoning above]`;
             }
         } catch (err) {
             throw err;
+        } finally {
+            // Always re-enable message input
+            UIController.clearSpinner();
+            UIController.clearStatus();
+            UIController.enableMessageInput && UIController.enableMessageInput();
         }
     }
 
@@ -566,6 +582,11 @@ Answer: [your final, concise answer based on the reasoning above]`;
             }
         } catch (err) {
             throw err;
+        } finally {
+            // Always re-enable message input
+            UIController.clearSpinner();
+            UIController.clearStatus();
+            UIController.enableMessageInput && UIController.enableMessageInput();
         }
     }
 
