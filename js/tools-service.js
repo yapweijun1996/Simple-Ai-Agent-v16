@@ -92,23 +92,28 @@ const ToolsService = (function() {
       let partialResults = [];
       for (const proxy of sortedProxies) {
         try {
+          toolsDebugLog(`[webSearch] Trying proxy: ${proxy.name} for query: ${query}`);
           const response = await fetch(proxy.formatUrl(searchUrl));
+          toolsDebugLog(`[webSearch] Proxy ${proxy.name} response status: ${response.status}`);
           if (!response.ok) throw new Error(`HTTP ${response.status}`);
           const htmlString = await proxy.parseResponse(response);
+          toolsDebugLog(`[webSearch] Raw HTML from proxy ${proxy.name}:`, htmlString.slice(0, 500));
           const results = parseResults(htmlString);
+          toolsDebugLog(`[webSearch] Parsed results from proxy ${proxy.name}:`, results);
           if (!results.length) throw new Error('No results');
           results.forEach(result => { if (onResult) onResult(result); });
           proxyHealth.set(proxy.name, (proxyHealth.get(proxy.name) || 1) + 2); // reward
           return results;
         } catch (err) {
+          toolsDebugLog(`[webSearch] Proxy ${proxy.name} failed: ${err.message}`);
           proxyHealth.set(proxy.name, (proxyHealth.get(proxy.name) || 1) - 2); // penalize
           if (partialResults.length) {
             if (onResult) partialResults.forEach(r => onResult(r));
             return partialResults;
           }
-          toolsDebugLog(`Proxy ${proxy.name} failed: ${err.message}`);
         }
       }
+      toolsDebugLog('[webSearch] All proxies failed for query:', query);
       throw new Error('All proxies failed');
     }
 
