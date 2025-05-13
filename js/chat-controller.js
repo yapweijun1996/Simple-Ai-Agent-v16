@@ -433,8 +433,18 @@ Answer: [your final, concise answer based on the reasoning above]`;
                 await handleGeminiMessage(selectedModel, enhancedMessage);
             }
         } catch (error) {
+            let userMessage = 'Error: ' + error.message;
+            if (error.message && error.message.includes('Failed to fetch')) {
+                userMessage += '\nPossible causes: network issue, CORS restriction, invalid API key, the API endpoint is down, or a proxy server is blocked.';
+                userMessage += '\n\nTroubleshooting tips:';
+                userMessage += '\n- Check your internet connection.';
+                userMessage += '\n- Make sure your API key is valid and not expired.';
+                userMessage += '\n- Try disabling browser extensions (ad blockers, privacy tools).';
+                userMessage += '\n- Check the browser console Network tab for CORS or HTTP errors.';
+                userMessage += '\n- Try a different network or device.';
+            }
+            UIController.addMessage('ai', userMessage);
             console.error('Error sending message:', error);
-            UIController.addMessage('ai', 'Error: ' + error.message);
         } finally {
             Utils.updateTokenDisplay(state.totalTokens);
             UIController.clearStatus();
