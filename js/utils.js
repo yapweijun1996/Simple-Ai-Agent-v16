@@ -298,7 +298,7 @@ const Utils = (function() {
             const prefix = proxies[(attempt - 1) % proxies.length];
             const url = prefix
                 ? (prefix.endsWith('?') || prefix.includes('?url=')
-                    ? prefix + encodeURIComponent(resource)
+                    ? prefix + (resource)
                     : prefix + resource)
                 : resource;
             try {
