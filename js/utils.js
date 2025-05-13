@@ -11,6 +11,19 @@ const Utils = (function() {
     // Add a module-level variable to track the timer for clearing the under-token status bar
     let underTokenStatusTimer = null;
 
+    // Debug logging helper
+    function utilsDebugLog(...args) {
+        try {
+            const debug = (typeof SettingsController !== 'undefined' && SettingsController.getSettings && SettingsController.getSettings().debug);
+            if (debug) {
+                console.warn('[UTILS-DEBUG]', ...args);
+            }
+        } catch (e) {
+            // Fallback: always log if settings unavailable
+            console.warn('[UTILS-DEBUG]', ...args);
+        }
+    }
+
     /**
      * Decrypts text using XOR cipher
      * @param {string} ciphertext - The encrypted text
