@@ -233,7 +233,7 @@ const UIController = (function() {
     }
     
     /**
-     * Formats code blocks in message text
+     * Formats code blocks in message text (prevents recursion)
      * @param {string} text - The message text
      * @returns {string} - HTML with formatted code blocks
      */
@@ -242,20 +242,18 @@ const UIController = (function() {
         let insideCode = false;
         let codeBlockLang = '';
         let currentText = '';
-        
         const lines = text.split('\n');
-        
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i];
-            
             if (line.startsWith('```')) {
                 if (!insideCode) {
                     // Start of code block
                     if (currentText) {
-                        formatted += `<div>${formatMessageContent(currentText)}</div>`;
+                        // Instead of calling formatMessageContent (which could recurse),
+                        // just escape and format the non-code text directly.
+                        formatted += `<div>${escapeHtml(currentText).replace(/\n/g, '<br>')}</div>`;
                         currentText = '';
                     }
-                    
                     insideCode = true;
                     codeBlockLang = line.slice(3).trim();
                     formatted += `<pre><code class="language-${codeBlockLang}">`;
@@ -272,13 +270,35 @@ const UIController = (function() {
                 currentText += (currentText ? '\n' : '') + line;
             }
         }
-        
-        // Add any remaining text
+        // Add any remaining text (non-code)
         if (currentText) {
-            formatted += formatMessageContent(currentText);
+            formatted += `<div>${escapeHtml(currentText).replace(/\n/g, '<br>')}</div>`;
         }
-        
         return formatted;
+    }
+
+    /**
+     * Formats message content, including code blocks and CoT reasoning
+     * @param {string} text
+     * @returns {string}
+     */
+    function formatMessageContent(text) {
+        // Highlight CoT reasoning if present
+        if (text.includes('Thinking:') && text.includes('Answer:')) {
+            const thinkingMatch = text.match(/Thinking:(.*?)(?=Answer:|$)/s);
+            const answerMatch = text.match(/Answer:(.*?)$/s);
+            if (thinkingMatch && answerMatch) {
+                const thinkingContent = escapeHtml(thinkingMatch[1].trim());
+                const answerContent = escapeHtml(answerMatch[1].trim());
+                return `<div class="thinking-section"><strong>Thinking:</strong><br>${thinkingContent.replace(/\n/g, '<br>')}</div>\n<div class="answer-section"><strong>Answer:</strong><br>${answerContent.replace(/\n/g, '<br>')}</div>`;
+            }
+        }
+        // Format code blocks if present
+        if (text.includes('```')) {
+            return formatCodeBlocks(text);
+        }
+        // Otherwise, escape and format as plain text
+        return escapeHtml(text).replace(/\n/g, '<br>');
     }
 
     /**
@@ -498,29 +518,6 @@ const UIController = (function() {
      */
     function showError(message) {
         setStatusBar(document.getElementById('status-bar'), { type: 'error', message, autoDismiss: false });
-    }
-
-    // Helper: Format message content (code blocks and CoT reasoning)
-    function formatMessageContent(text) {
-        // Escape HTML first
-        let escapedText = escapeHtml(text);
-        // Replace newlines with <br>
-        let formattedText = escapedText.replace(/\n/g, '<br>');
-        // Highlight CoT reasoning if present
-        if (text.includes('Thinking:') && text.includes('Answer:')) {
-            const thinkingMatch = text.match(/Thinking:(.*?)(?=Answer:|$)/s);
-            const answerMatch = text.match(/Answer:(.*?)$/s);
-            if (thinkingMatch && answerMatch) {
-                const thinkingContent = escapeHtml(thinkingMatch[1].trim());
-                const answerContent = escapeHtml(answerMatch[1].trim());
-                formattedText = `<div class="thinking-section"><strong>Thinking:</strong><br>${thinkingContent.replace(/\n/g, '<br>')}</div>\n<div class="answer-section"><strong>Answer:</strong><br>${answerContent.replace(/\n/g, '<br>')}</div>`;
-            }
-        }
-        // Format code blocks
-        if (text.includes('```')) {
-            formattedText = formatCodeBlocks(text);
-        }
-        return formattedText;
     }
 
     // Helper: Set thinking indicator
