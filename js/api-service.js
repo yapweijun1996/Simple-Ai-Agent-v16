@@ -172,29 +172,34 @@ const ApiService = (function() {
                     role: item.role === 'assistant' ? 'model' : 'user',
                     parts: [{ text: item.content }]
                 }));
-                
                 const requestBody = {
                     contents: contents,
                     generationConfig: generationConfig
                 };
-                
                 const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`;
-                const response = await Utils.fetchWithProxyRetry(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(requestBody)
-                }, undefined, 3, 1000, 10000);
-                
+                let response;
+                try {
+                    response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(requestBody)
+                    });
+                } catch (directErr) {
+                    apiDebugLog('Direct Gemini fetch failed, falling back to proxy:', directErr);
+                    response = await Utils.fetchWithProxyRetry(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(requestBody)
+                    }, undefined, 3, 1000, 10000);
+                }
                 if (!response.ok) {
                     const errText = await response.text();
                     throw new Error(`API error ${response.status}: ${errText}`);
                 }
-                
                 const result = await response.json();
                 if (!result.candidates || result.candidates.length === 0) {
                     throw new Error('No response from API');
                 }
-                
                 return result;
             }
         };
@@ -277,7 +282,6 @@ const ApiService = (function() {
     async function getTokenUsage(model, chatHistory) {
         try {
             let usageResult;
-            
             if (model.startsWith('gpt')) {
                 // ChatGPT usage via non-stream call
                 const res = await sendOpenAIRequest(model, chatHistory);
@@ -288,14 +292,22 @@ const ApiService = (function() {
                     role: item.role === 'assistant' ? 'model' : 'user',
                     parts: [{ text: item.content }]
                 }));
-                
                 const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`;
-                const res = await Utils.fetchWithProxyRetry(url, {
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify({ contents, generationConfig })
-                }, undefined, 3, 1000, 10000);
-                
+                let res;
+                try {
+                    res = await fetch(url, {
+                        method: 'POST', 
+                        headers: { 'Content-Type': 'application/json' }, 
+                        body: JSON.stringify({ contents, generationConfig })
+                    });
+                } catch (directErr) {
+                    apiDebugLog('Direct Gemini fetch for token usage failed, falling back to proxy:', directErr);
+                    res = await Utils.fetchWithProxyRetry(url, {
+                        method: 'POST', 
+                        headers: { 'Content-Type': 'application/json' }, 
+                        body: JSON.stringify({ contents, generationConfig })
+                    }, undefined, 3, 1000, 10000);
+                }
                 usageResult = await res.json();
                 return usageResult.usageMetadata?.totalTokenCount || 0;
             }
