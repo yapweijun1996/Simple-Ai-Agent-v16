@@ -376,6 +376,7 @@ Answer: [your final, concise answer based on the reasoning above]`;
     async function sendMessage() {
         const message = UIController.getUserInput();
         if (!isValidUserInput(message)) return;
+        debugLog("User query:", message);
         state.originalUserQuestion = message;
         state.toolWorkflowActive = true;
 
