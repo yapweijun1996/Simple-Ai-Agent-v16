@@ -43,8 +43,14 @@ const ChatController = (function() {
             jsonStr = match[1];
         } else {
             // Fallback: try to extract the first JSON object in the text
-            const jsonMatch = text.match(/\{[\s\S]*\}/);
-            if (jsonMatch) jsonStr = jsonMatch[0];
+            // Only match if it looks like a tool call (starts with {"tool":)
+            const jsonMatch = text.match(/\{[\s\S]*?\}/);
+            if (jsonMatch && jsonMatch[0].trim().startsWith('{"tool":')) {
+                jsonStr = jsonMatch[0];
+            } else {
+                // Not a tool call, skip
+                return null;
+            }
         }
         if (!jsonStr) return null;
         let obj;
