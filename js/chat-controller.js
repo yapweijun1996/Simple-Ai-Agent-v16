@@ -480,7 +480,7 @@ Answer: [your final, concise answer based on the reasoning above]`;
         } finally {
             state.isThinking = false;
             // Always re-enable message input
-            UIController.clearSpinner();
+            UIController.hideSpinner();
             UIController.clearStatus();
             UIController.enableMessageInput && UIController.enableMessageInput();
         }
@@ -522,7 +522,7 @@ Answer: [your final, concise answer based on the reasoning above]`;
             throw err;
         } finally {
             // Always re-enable message input
-            UIController.clearSpinner();
+            UIController.hideSpinner();
             UIController.clearStatus();
             UIController.enableMessageInput && UIController.enableMessageInput();
         }
@@ -584,7 +584,7 @@ Answer: [your final, concise answer based on the reasoning above]`;
             throw err;
         } finally {
             // Always re-enable message input
-            UIController.clearSpinner();
+            UIController.hideSpinner();
             UIController.clearStatus();
             UIController.enableMessageInput && UIController.enableMessageInput();
         }
