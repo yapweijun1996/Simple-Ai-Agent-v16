@@ -43,10 +43,15 @@ const ChatController = (function() {
             jsonStr = match[1];
         } else {
             // Fallback: try to extract the first JSON object in the text
-            // Only match if it looks like a tool call (starts with {"tool":)
             const jsonMatch = text.match(/\{[\s\S]*?\}/);
             if (jsonMatch && jsonMatch[0].trim().startsWith('{"tool":')) {
                 jsonStr = jsonMatch[0];
+                // Attempt to auto-close if braces are unbalanced
+                const openCount = (jsonStr.match(/\{/g) || []).length;
+                const closeCount = (jsonStr.match(/\}/g) || []).length;
+                if (openCount > closeCount) {
+                    jsonStr += '}'.repeat(openCount - closeCount);
+                }
             } else {
                 // Not a tool call, skip
                 return null;
@@ -57,7 +62,10 @@ const ChatController = (function() {
         try {
             obj = JSON.parse(jsonStr);
         } catch (err) {
-            console.warn('Tool JSON parse error:', err, 'from', jsonStr);
+            // Only log if debug is enabled
+            if (state.settings && state.settings.debug) {
+                console.warn('Tool JSON parse error:', err, 'from', jsonStr);
+            }
             return null;
         }
         if (typeof obj === 'object' && typeof obj.tool === 'string' && typeof obj.arguments === 'object') {
