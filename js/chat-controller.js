@@ -36,17 +36,24 @@ const ChatController = (function() {
 
     // Add helper to robustly extract JSON tool calls using delimiters and schema validation
     function extractToolCall(text) {
-        // Look for tool call wrapped in unique delimiters
+        // Prefer tool call wrapped in unique delimiters
         const match = text.match(/\[\[TOOLCALL\]\]([\s\S]*?)\[\[\/TOOLCALL\]\]/);
-        if (!match) return null;
+        let jsonStr = null;
+        if (match) {
+            jsonStr = match[1];
+        } else {
+            // Fallback: try to extract the first JSON object in the text
+            const jsonMatch = text.match(/\{[\s\S]*\}/);
+            if (jsonMatch) jsonStr = jsonMatch[0];
+        }
+        if (!jsonStr) return null;
         let obj;
         try {
-            obj = JSON.parse(match[1]);
+            obj = JSON.parse(jsonStr);
         } catch (err) {
-            console.warn('Tool JSON parse error:', err, 'from', match[1]);
+            console.warn('Tool JSON parse error:', err, 'from', jsonStr);
             return null;
         }
-        // Simple schema validation: must have 'tool' (string) and 'arguments' (object)
         if (typeof obj === 'object' && typeof obj.tool === 'string' && typeof obj.arguments === 'object') {
             return obj;
         }
