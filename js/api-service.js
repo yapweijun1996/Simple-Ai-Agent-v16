@@ -40,6 +40,19 @@ const ApiService = (function() {
         responseMimeType: "text/plain"
     };
 
+    // Add at the top, after 'use strict' or initial declarations
+    function apiDebugLog(...args) {
+        try {
+            const debug = (typeof SettingsController !== 'undefined' && SettingsController.getSettings && SettingsController.getSettings().debug);
+            if (debug) {
+                console.warn('[API-DEBUG]', ...args);
+            }
+        } catch (e) {
+            // Fallback: always log if settings unavailable
+            console.warn('[API-DEBUG]', ...args);
+        }
+    }
+
     /**
      * Initialize the API service by decrypting the API key
      * @param {string} password - The password to decrypt the API key
@@ -245,7 +258,8 @@ const ApiService = (function() {
                         fullReply += textChunk;
                         if (onChunk) onChunk(textChunk, fullReply);
                     } catch (err) {
-                        console.error('Stream parsing error', err);
+                        apiDebugLog('Stream parsing error', err);
+                        return null;
                     }
                 }
             }
@@ -286,8 +300,8 @@ const ApiService = (function() {
                 return usageResult.usageMetadata?.totalTokenCount || 0;
             }
         } catch (err) {
-            console.error('Error fetching token usage:', err);
-            return 0;
+            apiDebugLog('Error fetching token usage:', err);
+            return null;
         }
     }
 

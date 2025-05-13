@@ -64,7 +64,7 @@ const Utils = (function() {
         try {
             return { data: JSON.parse(dataStr) };
         } catch (err) {
-            console.error('Stream parsing error', err);
+            utilsDebugLog('Stream parsing error', err);
             return null;
         }
     }
@@ -77,7 +77,7 @@ const Utils = (function() {
     function createFromTemplate(templateId) {
         const template = document.getElementById(templateId);
         if (!template) {
-            console.error(`Template not found: ${templateId}`);
+            utilsDebugLog(`Template not found: ${templateId}`);
             return null;
         }
         return template.content.cloneNode(true).firstElementChild;
@@ -247,7 +247,7 @@ const Utils = (function() {
                 return response;
             } catch (err) {
                 if (err.name === 'AbortError') {
-                    console.error(`Fetch attempt ${attempt + 1} aborted:`, err.message || err);
+                    utilsDebugLog(`Fetch attempt ${attempt + 1} aborted:`, err.message || err);
                     throw err; // Do not retry on AbortError
                 }
                 attempt++;
@@ -297,7 +297,7 @@ const Utils = (function() {
                 return response;
             } catch (err) {
                 lastError = err;
-                console.warn(`Proxy fetch attempt ${attempt} via ${prefix || 'direct'} failed:`, err);
+                utilsDebugLog(`Proxy fetch attempt ${attempt} via ${prefix || 'direct'} failed:`, err);
                 if (attempt < retries) await new Promise(r => setTimeout(r, retryDelay));
             }
         }

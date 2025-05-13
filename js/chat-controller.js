@@ -395,7 +395,7 @@ Answer: [your final, concise answer based on the reasoning above]`;
         try {
             if (selectedModel.startsWith('gpt')) {
                 state.chatHistory.push({ role: 'user', content: enhancedMessage });
-                console.log("Sent enhanced message to GPT:", enhancedMessage);
+                debugLog("Sent enhanced message to GPT:", enhancedMessage);
                 await handleOpenAIMessage(selectedModel, enhancedMessage);
             } else if (selectedModel.startsWith('gemini') || selectedModel.startsWith('gemma')) {
                 if (state.chatHistory.length === 0) {
@@ -450,7 +450,7 @@ Answer: [your final, concise answer based on the reasoning above]`;
             if (state.settings.enableCoT) {
                 const processed = parseCoTResponse(fullReply);
                 if (processed.thinking) {
-                    console.log('AI Thinking:', processed.thinking);
+                    debugLog('AI Thinking:', processed.thinking);
                 }
                 const displayText = formatResponseForDisplay(processed);
                 if (isPlanMessage(displayText)) {
@@ -493,7 +493,7 @@ Answer: [your final, concise answer based on the reasoning above]`;
             if (state.settings.enableCoT) {
                 const processed = parseCoTResponse(reply);
                 if (processed.thinking) {
-                    console.log('AI Thinking:', processed.thinking);
+                    debugLog('AI Thinking:', processed.thinking);
                 }
                 state.chatHistory.push({ role: 'assistant', content: reply });
                 const displayText = formatResponseForDisplay(processed);
@@ -550,7 +550,7 @@ Answer: [your final, concise answer based on the reasoning above]`;
             if (state.settings.enableCoT) {
                 const processed = parseCoTResponse(textResponse);
                 if (processed.thinking) {
-                    console.log('AI Thinking:', processed.thinking);
+                    debugLog('AI Thinking:', processed.thinking);
                 }
                 state.chatHistory.push({ role: 'assistant', content: textResponse });
                 const displayText = formatResponseForDisplay(processed);

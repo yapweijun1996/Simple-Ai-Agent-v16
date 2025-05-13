@@ -6,6 +6,19 @@
 const UIController = (function() {
     'use strict';
 
+    // Toggleable UI debug log
+    function uiDebugLog(...args) {
+        try {
+            const debug = (typeof SettingsController !== 'undefined' && SettingsController.getSettings && SettingsController.getSettings().debug);
+            if (debug) {
+                console.log('[UI-DEBUG]', ...args);
+            }
+        } catch (e) {
+            // Fallback: always log if settings unavailable
+            console.log('[UI-DEBUG]', ...args);
+        }
+    }
+
     // Private state
     let sendMessageCallback = null;
     let clearChatCallback = null;
@@ -178,13 +191,13 @@ const UIController = (function() {
         if (sender === 'ai') {
             setTimeout(() => {
                 const messageInput = document.getElementById('message-input');
-                console.log('[Focus Debug] Running focus logic after agent reply.');
-                console.log('[Focus Debug] Current activeElement:', document.activeElement);
+                uiDebugLog('[Focus Debug] Running focus logic after agent reply.');
+                uiDebugLog('[Focus Debug] Current activeElement:', document.activeElement);
                 if (messageInput && document.activeElement !== messageInput) {
-                    console.log('[Focus Debug] Focusing messageInput:', messageInput);
+                    uiDebugLog('[Focus Debug] Focusing messageInput:', messageInput);
                     messageInput.focus();
                 } else {
-                    console.log('[Focus Debug] Not focusing: messageInput missing or already focused.');
+                    uiDebugLog('[Focus Debug] Not focusing: messageInput missing or already focused.');
                 }
             }, 100);
         }

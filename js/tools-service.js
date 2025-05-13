@@ -47,6 +47,18 @@ const ToolsService = (function() {
       return rawUrl;
     }
 
+    function toolsDebugLog(...args) {
+        try {
+            const debug = (typeof SettingsController !== 'undefined' && SettingsController.getSettings && SettingsController.getSettings().debug);
+            if (debug) {
+                console.warn('[TOOLS-DEBUG]', ...args);
+            }
+        } catch (e) {
+            // Fallback: always log if settings unavailable
+            console.warn('[TOOLS-DEBUG]', ...args);
+        }
+    }
+
     /**
      * Performs a search via the specified engine (duckduckgo, google, bing), streams results as found.
      * @param {string} query
@@ -94,6 +106,7 @@ const ToolsService = (function() {
             if (onResult) partialResults.forEach(r => onResult(r));
             return partialResults;
           }
+          toolsDebugLog(`Proxy ${proxy.name} failed: ${err.message}`);
         }
       }
       throw new Error('All proxies failed');
@@ -126,7 +139,7 @@ const ToolsService = (function() {
           const resultText = texts.join('\n\n').trim();
           return resultText;
         } catch (err) {
-          console.warn(`Proxy ${proxy.name} failed: ${err.message}`);
+          toolsDebugLog(`Proxy ${proxy.name} failed: ${err.message}`);
         }
       }
       throw new Error('All proxies failed');
@@ -144,7 +157,7 @@ const ToolsService = (function() {
       try {
         response = await Utils.fetchWithProxyRetry(url, { method: 'GET' });
       } catch (proxyErr) {
-        console.warn('Instant Answer proxy fetch failed, falling back to direct fetch:', proxyErr);
+        toolsDebugLog('Instant Answer proxy fetch failed, falling back to direct fetch:', proxyErr);
         // Fallback to direct fetch
         response = await fetch(url);
       }
