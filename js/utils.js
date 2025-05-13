@@ -237,7 +237,7 @@ const Utils = (function() {
     }
 
     // Add fetch helpers for timeout and retry
-    async function fetchWithTimeout(resource, options = {}, timeout = 10000) {
+    async function fetchWithTimeout(resource, options = {}, timeout = 30000) {
         const controller = new AbortController();
         const id = setTimeout(() => controller.abort(), timeout);
         options.signal = controller.signal;
@@ -248,7 +248,7 @@ const Utils = (function() {
         }
     }
 
-    async function fetchWithRetry(url, options = {}, maxAttempts = 3, delay = 1000, timeout = 10000) {
+    async function fetchWithRetry(url, options = {}, maxAttempts = 3, delay = 1000, timeout = 30000) {
         let attempt = 0;
         while (attempt < maxAttempts) {
             try {
@@ -292,7 +292,7 @@ const Utils = (function() {
         'https://cors-proxy.elfsight.com/'
     ];
 
-    async function fetchWithProxyRetry(resource, options = {}, proxies = corsProxies, retries = proxies.length, retryDelay = 1000, timeout = 10000) {
+    async function fetchWithProxyRetry(resource, options = {}, proxies = corsProxies, retries = proxies.length, retryDelay = 1000, timeout = 30000) {
         let lastError;
         for (let attempt = 1; attempt <= retries; attempt++) {
             const prefix = proxies[(attempt - 1) % proxies.length];
