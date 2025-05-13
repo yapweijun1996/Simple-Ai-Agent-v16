@@ -443,6 +443,7 @@ Answer: [your final, concise answer based on the reasoning above]`;
                 userMessage += '\n- Check the browser console Network tab for CORS or HTTP errors.';
                 userMessage += '\n- Try a different network or device.';
             }
+            UIController.showError(userMessage);
             UIController.addMessage('ai', userMessage);
             console.error('Error sending message:', error);
         } finally {
